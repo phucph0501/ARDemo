@@ -218,7 +218,7 @@
   <div class="fw" id="fw"></div>
 
   <div id="ui">
-    <button class="btn btn-red" id="celeBtn">🎆 Chúc mừng</button>
+
   </div>
 
   <a-scene mindar-image="imageTargetSrc: ./targets.mind;" vr-mode-ui="enabled: false"
@@ -276,49 +276,96 @@
 
     /* ===== QUÉT QR (dùng camera MindAR) ===== */
     (async () => {
+      const DEBUG = false; // đổi thành true nếu muốn log ra console
+
+      // 1) Tìm và CHỜ video nền của MindAR thật sự sẵn sàng
       function findMindARVideo() {
-        return document.querySelector('video#mindar-video') ||
-          document.querySelector('video#mindar-image-video') ||
-          document.querySelector('video[id^="mindar"]') ||
-          document.querySelector('video');
+        return document.querySelector('video#mindar-video')
+          || document.querySelector('video#mindar-image-video')
+          || document.querySelector('video[id^="mindar"]')
+          || document.querySelector('video');
       }
-      const waitMindARVideo = () => new Promise(res => {
-        const t = () => { const v = findMindARVideo(); v ? res(v) : requestAnimationFrame(t); }; t();
+      const waitMindARVideo = () => new Promise(resolve => {
+        const tick = () => { const v = findMindARVideo(); v ? resolve(v) : requestAnimationFrame(tick); };
+        tick();
       });
       const camVideo = await waitMindARVideo();
 
+      // Bắt camVideo chạy (Safari iOS cần gọi play() trước khi vẽ canvas)
+      camVideo.setAttribute('playsinline', '');
+      camVideo.setAttribute('webkit-playsinline', '');
+      try { await camVideo.play(); } catch (_) { }
+
+      // Chờ có kích thước (videoWidth/videoHeight > 0)
+      const waitReady = () => new Promise(res => {
+        const chk = () => {
+          if ((camVideo.videoWidth | 0) > 0 && (camVideo.videoHeight | 0) > 0 && camVideo.readyState >= 2) res();
+          else setTimeout(chk, 80);
+        };
+        chk();
+      });
+      await waitReady();
+
+      // 2) Chuẩn bị canvas đọc khung hình
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-      let lastContent = ''; let coolDown = false; let prompting = false;
+      // 3) Chọn engine: BarcodeDetector (nếu có) -> jsQR (fallback)
+      let useBarcodeDetector = 'BarcodeDetector' in window;
+      let detector = null;
+      if (useBarcodeDetector) {
+        try { detector = new BarcodeDetector({ formats: ['qr_code'] }); }
+        catch { useBarcodeDetector = false; }
+      }
 
+      // Toast thông báo chế độ
+      const toast = document.createElement('div');
+      toast.textContent = useBarcodeDetector ? 'QR: dùng BarcodeDetector' : 'QR: dùng chế độ tương thích (jsQR)';
+      Object.assign(toast.style, {
+        position: 'fixed', bottom: '86px', left: '12px',
+        background: 'rgba(0,0,0,.5)', color: '#fff',
+        padding: '6px 10px', borderRadius: '10px', fontSize: '12px', zIndex: 20
+      });
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+
+      let lastContent = '';
+      let coolDown = false;
+      let prompting = false;
+
+      function isValidURL(text) {
+        try { const u = new URL(text); return u.protocol === 'http:' || u.protocol === 'https:'; }
+        catch { return false; }
+      }
       function maybeOpen(url) {
         if (!url || prompting) return;
         prompting = true;
         const ok = window.confirm('Phát hiện QR:\n' + url + '\n\nBạn có muốn mở ở tab mới không?');
         if (ok) window.open(url, '_blank', 'noopener');
-        lastContent = url; coolDown = true; setTimeout(() => coolDown = false, 1500); prompting = false;
+        lastContent = url;
+        coolDown = true; setTimeout(() => coolDown = false, 1500);
+        prompting = false;
       }
-      function isValidURL(text) { try { const u = new URL(text); return ['http:', 'https:'].includes(u.protocol); } catch { return false; } }
 
-      let useBarcodeDetector = 'BarcodeDetector' in window;
-      let detector = null;
-      if (useBarcodeDetector) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch { useBarcodeDetector = false; } }
+      // Đảm bảo biến activeTargets tồn tại & đúng
+      window.activeTargets = window.activeTargets || 0;
 
+      // 4) Vòng lặp quét
       async function loop() {
         try {
-          if (activeTargets === 0 && !coolDown && !prompting) {
+          // Ưu tiên AR: nếu đang thấy marker -> bỏ qua quét QR
+          if (window.activeTargets === 0 && !coolDown && !prompting) {
             let foundUrl = null;
 
             if (useBarcodeDetector && detector) {
               const codes = await detector.detect(camVideo);
               if (codes && codes.length) {
                 const raw = (codes[0].rawValue || '').trim();
+                if (DEBUG) console.log('BD hit:', raw);
                 if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
               }
             } else {
-              const vw = camVideo.videoWidth || camVideo.width || 1280;
-              const vh = camVideo.videoHeight || camVideo.height || 720;
+              const vw = camVideo.videoWidth | 0, vh = camVideo.videoHeight | 0;
               if (vw && vh) {
                 canvas.width = vw; canvas.height = vh;
                 ctx.drawImage(camVideo, 0, 0, vw, vh);
@@ -326,25 +373,19 @@
                 const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'dontInvert' });
                 if (qr && qr.data) {
                   const raw = qr.data.trim();
+                  if (DEBUG) console.log('jsQR hit:', raw);
                   if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
                 }
               }
             }
+
             if (foundUrl) maybeOpen(foundUrl);
           }
-        } catch (_) { }
-        requestAnimationFrame(loop);
-      }
-
-      if (!useBarcodeDetector) {
-        const note = document.createElement('div');
-        note.textContent = 'QR: Sẵn sàng';
-        Object.assign(note.style, {
-          position: 'fixed', bottom: '86px', left: '12px', background: 'rgba(0,0,0,.4)',
-          color: '#fff', padding: '6px 10px', borderRadius: '10px', fontSize: '12px', zIndex: 20
-        });
-        document.body.appendChild(note);
-        setTimeout(() => note.remove(), 4000);
+        } catch (e) {
+          if (DEBUG) console.warn('QR loop error:', e);
+        }
+        // ~30fps là đủ, giảm tải CPU
+        setTimeout(() => requestAnimationFrame(loop), 34);
       }
       loop();
     })();
