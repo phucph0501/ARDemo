@@ -6,7 +6,7 @@ Giống tính năng **AR Video** như ar-code.com: quét **mã QR** → mở tra
 - Chọn **ảnh tĩnh** bạn muốn nhận diện (ví dụ: chính **QR** in ra, poster, logo…).
 - Dùng **MindAR Image Compiler** để tạo file `targets.mind` từ ảnh đó. Bạn có thể dùng tool dòng lệnh `mindar-image compile --input target.jpg --output targets.mind` (cài `mind-ar` bằng npm) hoặc dùng tool web của MindAR.
 - Đặt `targets.mind` vào cùng thư mục với `index.html`.
-
+- Tạo tại đây https://www.mindar.org/how-to-choose-a-good-target-image-for-tracking-in-ar-part-1/?utm_source=chatgpt.com
 > Mẹo: Ảnh có **nhiều chi tiết**/texture sẽ theo dõi tốt hơn ảnh phẳng trơn.
 
 ## 2) Thêm video của bạn
