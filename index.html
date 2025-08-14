@@ -1,144 +1,231 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>AR Video — Chủ đề A80 Quốc khánh 2/9</title>
 
-  <!-- A-Frame + MindAR (CDN) -->
+  <!-- A-Frame + MindAR -->
   <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <!-- jsQR fallback cho quét QR -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
-    /* ====== NỀN TRONG SUỐT + CAMERA FEED ====== */
-    html, body { margin:0; padding:0; height:100%; background:transparent !important;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    a-scene, canvas { background:transparent !important; }
-    /* MindAR sẽ chèn video#mindar-video — ta đưa nó làm nền */
-    video#mindar-video{
-      position:fixed !important; inset:0 !important;
-      width:100vw !important; height:100vh !important; object-fit:cover !important;
-      z-index:-1 !important;
-      filter: saturate(1.05) contrast(1.05); /* nhẹ cho màu đẹp hơn */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: transparent !important;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* ====== CHỦ ĐỀ A80 — QUỐC KHÁNH 2/9 ====== */
-    :root{
-      --red:#C8102E;      /* Đỏ cờ */
-      --bright-red:#e11d2f;
-      --gold:#FFD700;     /* Vàng sao */
-      --cream:#fff7d6;    /* Vàng kem nhẹ dùng cho viền */
-      --glass: rgba(0,0,0,.35);
+    a-scene,
+    canvas {
+      background: transparent !important;
     }
 
-    /* Banner trên cùng */
-    .banner{
-      position:fixed; left:12px; right:12px; top:12px; z-index:10;
-      display:flex; align-items:center; gap:10px;
+    video#mindar-video {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      object-fit: cover !important;
+      z-index: -1 !important;
+      filter: saturate(1.05) contrast(1.05);
+    }
+
+    :root {
+      --red: #C8102E;
+      --bright-red: #e11d2f;
+      --gold: #FFD700;
+      --cream: #fff7d6;
+      --glass: rgba(0, 0, 0, .35);
+    }
+
+    .banner {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       background: linear-gradient(135deg, var(--red), var(--bright-red));
-      color:#fff; padding:10px 14px; border-radius:16px;
-      box-shadow: 0 12px 30px rgba(200,16,46,.35), inset 0 0 0 2px rgba(255,255,255,.12);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(200, 16, 46, .35), inset 0 0 0 2px rgba(255, 255, 255, .12);
       backdrop-filter: blur(8px);
     }
-    .banner .star{
-      width:28px; height:28px; background:var(--gold); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
-    }
-    .banner .title{
-      font-weight:900; letter-spacing:.2px; font-size:16px;
-      text-shadow:0 1px 0 rgba(0,0,0,.25);
-    }
-    .banner .sub{
-      margin-left:auto; font-weight:700; background:rgba(255,255,255,.15);
-      padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2);
+
+    .banner .star {
+      width: 28px;
+      height: 28px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25));
     }
 
-    /* Vùng điều khiển nút */
-    #ui{
-      position:fixed; left:0; right:0; bottom:14px; z-index:10;
-      display:flex; justify-content:center; gap:10px; padding:0 12px;
+    .banner .title {
+      font-weight: 900;
+      letter-spacing: .2px;
+      font-size: 16px;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
     }
-    .btn{
-      appearance:none; border:0; cursor:pointer;
-      padding:10px 14px; border-radius:999px; font-weight:800;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.22);
-      transition:.2s transform ease, .2s filter ease;
+
+    .banner .sub {
+      margin-left: auto;
+      font-weight: 700;
+      background: rgba(255, 255, 255, .15);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .2);
+    }
+
+    #ui {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 14px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 12px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .25), inset 0 0 0 2px rgba(255, 255, 255, .22);
+      transition: .2s transform ease, .2s filter ease;
       backdrop-filter: blur(8px);
     }
-    .btn:active{ transform: translateY(2px) scale(.98); }
-    .btn-gold{ background:linear-gradient(135deg, var(--gold), #f6c105); color:#7a5200; }
-    .btn-silver{ background:linear-gradient(135deg, #f4f4f5, #d4d4d8); color:#111827; }
-    .btn-red{ background:linear-gradient(135deg, var(--bright-red), #b4061a); color:#fff; }
 
-    /* Tip bán trong suốt ở giữa trên */
-    .tip{
-      position:fixed; left:50%; transform:translateX(-50%);
-      top:64px; z-index:10; color:#fff; font-weight:700;
-      background:var(--glass); padding:8px 12px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.2);
-      text-shadow:0 1px 0 rgba(0,0,0,.35);
+    .btn:active {
+      transform: translateY(2px) scale(.98);
     }
 
-    /* Huy hiệu sao nền mờ (watermark) */
-    .wm-star{
-      position:fixed; right:8px; bottom:88px; width:64px; height:64px; opacity:.18; z-index:1;
-      background:var(--gold);
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #f6c105);
+      color: #7a5200;
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, var(--bright-red), #b4061a);
+      color: #fff;
+    }
+
+    .tip {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 64px;
+      z-index: 10;
+      color: #fff;
+      font-weight: 700;
+      background: var(--glass);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+    }
+
+    .wm-star {
+      position: fixed;
+      right: 8px;
+      bottom: 88px;
+      width: 64px;
+      height: 64px;
+      opacity: .18;
+      z-index: 1;
+      background: var(--gold);
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       filter: blur(.4px);
       animation: float 6s ease-in-out infinite;
     }
-    @keyframes float{ 0%{ transform:translateY(0);} 50%{ transform:translateY(-6px);} 100%{ transform:translateY(0);} }
 
-    /* Pháo hoa đơn giản */
-    .fw{
-      pointer-events:none; position:fixed; inset:0; z-index:0; overflow:hidden;
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
     }
-    .fw i{
-      position:absolute; width:6px; height:6px; background:var(--gold);
-      border-radius:50%; box-shadow:0 0 10px var(--gold);
+
+    /* Pháo hoa — tăng z-index lên trên canvas nhưng dưới UI (z=10) */
+    .fw {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      overflow: hidden;
+    }
+
+    .fw i {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--gold);
       animation: pop 1200ms ease-out forwards;
     }
-    @keyframes pop{
-      0%{ transform:translate(0,0) scale(0); opacity:0; }
-      10%{ opacity:1; }
-      100%{ transform:translate(var(--x), var(--y)) scale(0.1); opacity:0; }
+
+    @keyframes pop {
+      0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0.1);
+        opacity: 0;
+      }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- Banner Lễ -->
   <div class="banner">
     <div class="star"></div>
     <div class="title">Mừng Quốc khánh 2/9</div>
     <div class="sub">A80 Fest</div>
   </div>
 
-  <!-- Gợi ý -->
-  <div class="tip">Đưa camera tới ảnh mục tiêu để phát video • Quét QR sẽ hỏi mở tab</div>
+  <div class="tip">Đưa camera tới ảnh/QR code.</div>
 
-  <!-- Huy hiệu sao nền -->
   <div class="wm-star"></div>
-  <!-- Lớp pháo hoa -->
   <div class="fw" id="fw"></div>
 
-  <!-- Nút điều khiển -->
   <div id="ui">
-    <button class="btn btn-gold" id="unmuteBtn">🔊 Bật tiếng</button>
-    <button class="btn btn-silver" id="flashBtn">⚡ Đổi camera (nếu cần)</button>
     <button class="btn btn-red" id="celeBtn">🎆 Chúc mừng</button>
   </div>
 
-  <!-- ===== AR Scene ===== -->
-  <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind;"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    embedded
+  <a-scene mindar-image="imageTargetSrc: ./targets.mind;" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false" embedded
     renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
-      <!-- ĐỔI đường dẫn cho phù hợp. Có thể trỏ CDN/Drive (uc?export=download&id=...) -->
       <video id="v0" src="./video1.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
       <video id="v1" src="./video2.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
       <video id="v2" src="./video3.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
@@ -146,15 +233,12 @@
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- targetIndex phải đúng thứ tự ảnh trong targets.mind -->
     <a-entity id="t0" mindar-image-target="targetIndex: 0">
       <a-video src="#v0" width="1" height="0.5625" position="0 0 0"></a-video>
     </a-entity>
-
     <a-entity id="t1" mindar-image-target="targetIndex: 1">
       <a-video src="#v1" width="1" height="0.5625" position="0 0 0"></a-video>
     </a-entity>
-
     <a-entity id="t2" mindar-image-target="targetIndex: 2">
       <a-video src="#v2" width="1" height="0.5625" position="0 0 0"></a-video>
     </a-entity>
@@ -162,102 +246,130 @@
   </a-scene>
 
   <script>
-    /* ====== NÚT & ÂM THANH ====== */
+    /* ===== NÚT & ÂM THANH ===== */
     const vids = Array.from(document.querySelectorAll('video'));
-    const unmuteBtn = document.getElementById('unmuteBtn');
-    vids.forEach(v=>{
-      v.muted = true; v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    vids.forEach(v => {
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
     });
-    unmuteBtn.addEventListener('click', ()=>{
-      vids.forEach(v=> v.muted=false);
-      vids.forEach(v=> v.play().catch(()=>{}));
-      unmuteBtn.disabled = true; unmuteBtn.textContent = "🔊 Đã bật";
-    });
-    document.body.addEventListener('touchstart', ()=>{ vids.forEach(v=>v.play().catch(()=>{})); }, {once:true});
-
-    /* ====== THEO DÕI MARKER → PHÁT/DỪNG VIDEO ====== */
+    /* ===== THEO DÕI MARKER ===== */
     let activeTargets = 0;
-    function wireTarget(tId, vId){
-      const t = document.getElementById(tId);
-      const v = document.getElementById(vId);
-      if(!t || !v) return;
-      t.addEventListener('targetFound', ()=>{
+    function wireTarget(targetSelector, videoSelector) {
+      const target = document.querySelector(targetSelector);
+      const video = document.querySelector(videoSelector);
+      if (!target || !video) return;
+
+      target.addEventListener('targetFound', () => {
         activeTargets++;
-        try{ if(v.currentTime<0.01) v.currentTime=0; }catch{}
-        v.play().catch(()=>{});
+        try { if (video.currentTime < 0.01) video.currentTime = 0; } catch { }
+        video.play().catch(() => { });
       });
-      t.addEventListener('targetLost', ()=>{
-        activeTargets = Math.max(0, activeTargets-1);
-        if(!v.paused) v.pause();
+      target.addEventListener('targetLost', () => {
+        activeTargets = Math.max(0, activeTargets - 1);
+        if (!video.paused) video.pause();
       });
     }
-    wireTarget('t0','v0'); wireTarget('t1','v1'); wireTarget('t2','v2');
+    // ✅ thêm dấu # cho selector
+    wireTarget('#t0', '#v0');
+    wireTarget('#t1', '#v1');
+    wireTarget('#t2', '#v2');
 
-    /* ====== QUÉT QR (chung camera MindAR) ====== */
-    (async ()=>{
-      // đợi MindAR gắn video nền
-      const waitMindARVideo = () => new Promise(res=>{
-        const f=()=>{ const v=document.getElementById('mindar-video'); v?res(v):requestAnimationFrame(f); }; f();
+    /* ===== QUÉT QR (dùng camera MindAR) ===== */
+    (async () => {
+      function findMindARVideo() {
+        return document.querySelector('video#mindar-video') ||
+          document.querySelector('video#mindar-image-video') ||
+          document.querySelector('video[id^="mindar"]') ||
+          document.querySelector('video');
+      }
+      const waitMindARVideo = () => new Promise(res => {
+        const t = () => { const v = findMindARVideo(); v ? res(v) : requestAnimationFrame(t); }; t();
       });
       const camVideo = await waitMindARVideo();
 
-      if(!('BarcodeDetector' in window)){
-        console.warn('Thiếu BarcodeDetector (cần Chrome/Edge mới, iOS 17+).');
-        return;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      let lastContent = ''; let coolDown = false; let prompting = false;
+
+      function maybeOpen(url) {
+        if (!url || prompting) return;
+        prompting = true;
+        const ok = window.confirm('Phát hiện QR:\n' + url + '\n\nBạn có muốn mở ở tab mới không?');
+        if (ok) window.open(url, '_blank', 'noopener');
+        lastContent = url; coolDown = true; setTimeout(() => coolDown = false, 1500); prompting = false;
       }
-      const detector = new BarcodeDetector({formats:['qr_code']});
-      let lastContent=''; let coolDown=false; let prompting=false;
+      function isValidURL(text) { try { const u = new URL(text); return ['http:', 'https:'].includes(u.protocol); } catch { return false; } }
 
-      function isValidURL(txt){ try{ const u=new URL(txt); return ['http:','https:'].includes(u.protocol); }catch{ return false; } }
+      let useBarcodeDetector = 'BarcodeDetector' in window;
+      let detector = null;
+      if (useBarcodeDetector) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch { useBarcodeDetector = false; } }
 
-      async function loop(){
-        try{
-          if(activeTargets===0 && !coolDown && !prompting){
-            const codes = await detector.detect(camVideo);
-            if(codes && codes.length){
-              const raw = (codes[0].rawValue||'').trim();
-              if(raw && raw!==lastContent && isValidURL(raw)){
-                prompting = true;
-                const ok = window.confirm('Phát hiện QR:\\n'+raw+'\\n\\nMở tab mới?');
-                if(ok){ window.open(raw, '_blank', 'noopener'); }
-                lastContent=raw; coolDown=true; setTimeout(()=>coolDown=false, 1500); prompting=false;
+      async function loop() {
+        try {
+          if (activeTargets === 0 && !coolDown && !prompting) {
+            let foundUrl = null;
+
+            if (useBarcodeDetector && detector) {
+              const codes = await detector.detect(camVideo);
+              if (codes && codes.length) {
+                const raw = (codes[0].rawValue || '').trim();
+                if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
+              }
+            } else {
+              const vw = camVideo.videoWidth || camVideo.width || 1280;
+              const vh = camVideo.videoHeight || camVideo.height || 720;
+              if (vw && vh) {
+                canvas.width = vw; canvas.height = vh;
+                ctx.drawImage(camVideo, 0, 0, vw, vh);
+                const img = ctx.getImageData(0, 0, vw, vh);
+                const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'dontInvert' });
+                if (qr && qr.data) {
+                  const raw = qr.data.trim();
+                  if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
+                }
               }
             }
+            if (foundUrl) maybeOpen(foundUrl);
           }
-        }catch(_){}
+        } catch (_) { }
         requestAnimationFrame(loop);
+      }
+
+      if (!useBarcodeDetector) {
+        const note = document.createElement('div');
+        note.textContent = 'QR: Sẵn sàng';
+        Object.assign(note.style, {
+          position: 'fixed', bottom: '86px', left: '12px', background: 'rgba(0,0,0,.4)',
+          color: '#fff', padding: '6px 10px', borderRadius: '10px', fontSize: '12px', zIndex: 20
+        });
+        document.body.appendChild(note);
+        setTimeout(() => note.remove(), 4000);
       }
       loop();
     })();
 
-    /* ====== PHÁO HOA LỄ ====== */
+    /* ===== PHÁO HOA ===== */
     const fw = document.getElementById('fw');
-    function fireworkBurst(x,y){
-      for(let i=0;i<22;i++){
-        const p=document.createElement('i');
-        const ang=Math.random()*Math.PI*2, r=60+Math.random()*140;
-        p.style.left=x+'px'; p.style.top=y+'px';
-        p.style.setProperty('--x', Math.cos(ang)*r+'px');
-        p.style.setProperty('--y', Math.sin(ang)*r+'px');
+    function fireworkBurst(x, y) {
+      for (let i = 0; i < 22; i++) {
+        const p = document.createElement('i');
+        const ang = Math.random() * Math.PI * 2, r = 60 + Math.random() * 140;
+        p.style.left = x + 'px'; p.style.top = y + 'px';
+        p.style.setProperty('--x', Math.cos(ang) * r + 'px');
+        p.style.setProperty('--y', Math.sin(ang) * r + 'px');
         fw.appendChild(p);
-        setTimeout(()=>p.remove(), 1200);
+        setTimeout(() => p.remove(), 1200);
       }
     }
-    const celeBtn=document.getElementById('celeBtn');
-    celeBtn.addEventListener('click', ()=>{
-      const cx=innerWidth/2, cy=innerHeight*0.35;
+    document.getElementById('celeBtn').addEventListener('click', () => {
+      const cx = innerWidth / 2, cy = innerHeight * 0.35;
       fireworkBurst(cx, cy);
-      setTimeout(()=>fireworkBurst(cx-90, cy+40), 120);
-      setTimeout(()=>fireworkBurst(cx+90, cy+20), 220);
-      if(navigator.vibrate) navigator.vibrate(80);
-    });
-
-    /* ====== ĐỔI CAMERA (nếu thiết bị hỗ trợ) ======
-       MindAR chưa expose API đổi facingMode trực tiếp trong runtime ổn định trên mọi trình duyệt.
-       Nút này gợi ý người dùng làm mới trang; trên một số máy sẽ tự chọn camera sau khi reload. */
-    document.getElementById('flashBtn').addEventListener('click', ()=>{
-      alert('Nếu camera trước/sau chưa đúng, hãy xoay thiết bị hoặc tải lại trang.\nMindAR sẽ chọn camera phù hợp (thường là camera sau).');
+      setTimeout(() => fireworkBurst(cx - 90, cy + 40), 120);
+      setTimeout(() => fireworkBurst(cx + 90, cy + 20), 220);
+      if (navigator.vibrate) navigator.vibrate(80);
     });
   </script>
 </body>
+
 </html>
