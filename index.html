@@ -4,17 +4,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>AR Video</title>
+  <title>AR Video (nhiều ảnh–nhiều video)</title>
   <link rel="stylesheet" href="./style.css">
   <!-- A-Frame + MindAR (CDN) -->
   <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  <script defer src="./script.js"></script>
 </head>
 
 <body>
   <div id="ui">
-    <div class="tip">Đưa camera tới hình/QR mục tiêu để phát video</div>
+    <div class="tip">Đưa camera tới đúng ảnh mục tiêu để phát video</div>
     <button id="unmuteBtn">Bật tiếng</button>
   </div>
 
@@ -23,19 +22,74 @@
     renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
-      <!-- Thay video.mp4 bằng link/đường dẫn video của bạn (nên H.264 MP4) -->
-      <video id="ar-video" src="./video.mp4" preload="auto" webkit-playsinline playsinline
-        crossorigin="anonymous"></video>
+      <!-- Mỗi marker một video. ĐỔI đường dẫn cho phù hợp -->
+      <video id="v0" src="./video-0.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v1" src="./video-1.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v2" src="./video-2.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- targetIndex: 0 ứng với ảnh đầu tiên trong targets.mind -->
-    <a-entity mindar-image-target="targetIndex: 0">
-      <!-- Tỉ lệ 16:9: width=1 -> height ~0.5625. Điều chỉnh kích thước theo ảnh mục tiêu của bạn -->
-      <a-video id="video-plane" src="#ar-video" width="1" height="0.5625" position="0 0 0"></a-video>
+    <!-- targetIndex N phải trùng với thứ tự ảnh khi bạn compile targets.mind -->
+
+    <!-- Marker 0 -> Video 0 -->
+    <a-entity id="t0" mindar-image-target="targetIndex: 0">
+      <!-- Điều chỉnh width/height theo tỉ lệ video (mặc định 16:9) -->
+      <a-video src="#v0" width="1" height="0.5625" position="0 0 0"></a-video>
     </a-entity>
+
+    <!-- Marker 1 -> Video 1 -->
+    <a-entity id="t1" mindar-image-target="targetIndex: 1">
+      <a-video src="#v1" width="1" height="0.5625" position="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Marker 2 -> Video 2 -->
+    <a-entity id="t2" mindar-image-target="targetIndex: 2">
+      <a-video src="#v2" width="1" height="0.5625" position="0 0 0"></a-video>
+    </a-entity>
+
   </a-scene>
+
+  <script>
+    // Autoplay & mute: áp cho tất cả video
+    const vids = Array.from(document.querySelectorAll('video'));
+    vids.forEach(v => {
+      v.muted = true; // để autoplay trên iOS/Android
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+    });
+
+    // Bắt sự kiện targetFound/targetLost cho từng marker
+    function wireTarget(targetId, videoId) {
+      const target = document.getElementById(targetId);
+      const video = document.getElementById(videoId);
+
+      target.addEventListener('targetFound', () => {
+        try { if (video.currentTime < 0.01) video.currentTime = 0; } catch { }
+        video.play().catch(() => { });
+      });
+      target.addEventListener('targetLost', () => {
+        if (!video.paused) video.pause();
+      });
+    }
+
+    wireTarget('t0', 'v0');
+    wireTarget('t1', 'v1');
+    wireTarget('t2', 'v2');
+
+    // Nút bật tiếng (gỡ mute tất cả video sau khi người dùng tương tác)
+    document.getElementById('unmuteBtn').addEventListener('click', () => {
+      vids.forEach(v => v.muted = false);
+      // gọi play() để một số trình duyệt kích hoạt âm thanh
+      vids.forEach(v => v.play().catch(() => { }));
+      document.getElementById('unmuteBtn').style.display = 'none';
+    });
+
+    // Một số trình duyệt yêu cầu chạm lần đầu
+    document.body.addEventListener('touchstart', () => {
+      vids.forEach(v => v.play().catch(() => { }));
+    }, { once: true });
+  </script>
 </body>
 
 </html>
