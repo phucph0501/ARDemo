@@ -13,173 +13,76 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
+    html, body {
+      margin: 0; padding: 0; height: 100%;
       background: transparent !important;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-
-    a-scene,
-    canvas {
-      background: transparent !important;
-    }
+    a-scene, canvas { background: transparent !important; }
 
     video#mindar-video {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      object-fit: cover !important;
-      z-index: -1 !important;
+      position: fixed !important; inset: 0 !important;
+      width: 100vw !important; height: 100vh !important;
+      object-fit: cover !important; z-index: -1 !important;
       filter: saturate(1.05) contrast(1.05);
     }
 
-    :root {
-      --red: #C8102E;
-      --bright-red: #e11d2f;
-      --gold: #FFD700;
-      --glass: rgba(0, 0, 0, .35);
-    }
+    :root { --red:#C8102E; --bright-red:#e11d2f; --gold:#FFD700; --glass:rgba(0,0,0,.35); }
 
     .banner {
-      position: fixed;
-      left: 12px;
-      right: 12px;
-      top: 12px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      position: fixed; left: 12px; right: 12px; top: 12px; z-index: 10;
+      display: flex; align-items: center; gap: 10px;
       background: linear-gradient(135deg, var(--red), var(--bright-red));
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(200, 16, 46, .35), inset 0 0 0 2px rgba(255, 255, 255, .12);
+      color: #fff; padding: 10px 14px; border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(200,16,46,.35), inset 0 0 0 2px rgba(255,255,255,.12);
       backdrop-filter: blur(8px);
     }
-
     .banner .star {
-      width: 28px;
-      height: 28px;
-      background: var(--gold);
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25));
+      width: 28px; height: 28px; background: var(--gold);
+      clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
     }
-
-    .banner .title {
-      font-weight: 900;
-      letter-spacing: .2px;
-      font-size: 16px;
-      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
-    }
-
-    .banner .sub {
-      margin-left: auto;
-      font-weight: 700;
-      background: rgba(255, 255, 255, .15);
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, .2);
-    }
+    .banner .title { font-weight: 900; letter-spacing: .2px; font-size: 16px; text-shadow: 0 1px 0 rgba(0,0,0,.25); }
+    .banner .sub { margin-left:auto; font-weight:700; background:rgba(255,255,255,.15); padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2); }
 
     .tip {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 64px;
-      z-index: 10;
-      color: #fff;
-      font-weight: 700;
-      background: var(--glass);
-      padding: 8px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, .2);
-      text-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+      position: fixed; left: 50%; transform: translateX(-50%); top: 64px; z-index: 10;
+      color:#fff; font-weight:700; background: var(--glass);
+      padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2);
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
     }
 
     #ui {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 14px;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 0 12px;
+      position: fixed; left: 0; right: 0; bottom: 14px; z-index: 10;
+      display: flex; justify-content: center; gap: 10px; padding: 0 12px;
     }
-
     .btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 800;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, .25), inset 0 0 0 2px rgba(255, 255, 255, .22);
-      backdrop-filter: blur(8px);
-      background: linear-gradient(135deg, var(--gold), #f6c105);
-      color: #7a5200;
+      appearance: none; border: 0; cursor: pointer; padding: 10px 14px; border-radius: 999px;
+      font-weight: 800; box-shadow: 0 10px 24px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.22);
+      backdrop-filter: blur(8px); background: linear-gradient(135deg, var(--gold), #f6c105); color: #7a5200;
     }
-
-    .btn[disabled] {
-      opacity: .6;
-      cursor: not-allowed;
-    }
+    .btn[disabled] { opacity:.6; cursor:not-allowed; }
 
     /* Bottom sheet mở URL sau khi quét */
     #qrSheet {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9998;
-      display: none;
-      background: rgba(20, 20, 20, .9);
-      color: #fff;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, .35);
-      padding: 14px;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998; display: none;
+      background: rgba(20,20,20,.9); color: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,.35); padding: 14px;
     }
-
     #qrURL {
-      word-break: break-all;
-      font-size: 14px;
-      opacity: .9;
-      margin-bottom: 10px;
+      word-break: break-all; font-size: 14px; opacity: .9; margin-bottom: 10px;
     }
-
     #qrActions {
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; gap: 10px; justify-content: space-between; align-items: center;
     }
-
-    #openLink,
-    #dismissSheet {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 800;
+    #openLink, #dismissSheet {
+      appearance: none; border: 0; cursor: pointer; padding: 10px 14px; border-radius: 999px; font-weight: 800;
     }
-
     #openLink {
-      background: linear-gradient(135deg, var(--gold), #f6c105);
-      color: #7a5200;
-      text-decoration: none;
-      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #f6c105); color:#7a5200; text-decoration: none; display: inline-block;
     }
-
     #dismissSheet {
-      background: rgba(255, 255, 255, .12);
-      color: #fff;
+      background: rgba(255,255,255,.12); color:#fff;
     }
   </style>
 </head>
@@ -214,12 +117,9 @@
 
     <a-assets>
       <!-- Thêm loop để tránh đứng ở cuối -->
-      <video id="v0" src="./video1.mp4" preload="auto" loop webkit-playsinline playsinline
-        crossorigin="anonymous"></video>
-      <video id="v1" src="./video2.mp4" preload="auto" loop webkit-playsinline playsinline
-        crossorigin="anonymous"></video>
-      <video id="v2" src="./video3.mp4" preload="auto" loop webkit-playsinline playsinline
-        crossorigin="anonymous"></video>
+      <video id="v0" src="./video1.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v1" src="./video2.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v2" src="./video3.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -240,34 +140,36 @@
     /* ===== Cấu hình video & mở khóa âm thanh ===== */
     const vids = Array.from(document.querySelectorAll('video'));
     vids.forEach(v => {
-      v.muted = true; // mặc định tắt tiếng để tránh lỗi autoplay
+      v.muted = true; // giữ muted để autoplay không lỗi
       v.setAttribute('playsinline', '');
       v.setAttribute('webkit-playsinline', '');
       v.volume = 1.0;
     });
 
-    let audioOn = false; // trạng thái tiếng (false = tắt, true = bật)
-
-    async function toggleAudio() {
-      // Resume WebAudio nếu cần (iOS/Safari)
+    let AUDIO_UNLOCKED = false;
+    async function unlockAudio() {
+      if (AUDIO_UNLOCKED) return;
+      // 1) Resume WebAudio của A-Frame (nếu dùng)
       try {
         const scene = AFRAME.scenes?.[0];
         const ctx = scene?.systems?.sound?.listener?.context;
         if (ctx && ctx.state !== 'running') await ctx.resume();
-      } catch (e) { }
+      } catch (e) {}
 
-      audioOn = !audioOn; // đảo trạng thái
+      // 2) “kích hoạt” quyền phát tiếng cho tất cả video trong 1 gesture
+      await Promise.all(vids.map(async v => {
+        try {
+          v.muted = false;
+          await v.play();  // play trong gesture để lấy quyền audio
+          v.pause();       // không muốn phát ngay → pause và tua về đầu
+          v.currentTime = 0;
+        } catch (e) {}
+      }));
 
-      vids.forEach(v => {
-        v.muted = !audioOn;
-        if (audioOn) {
-          // bật tiếng thì gọi play() để đảm bảo phát audio
-          v.play().catch(() => { });
-        }
-      });
-
-      // Cập nhật nhãn nút
-      unlockBtn.textContent = audioOn ? '🔇 Tắt tiếng' : '🔊 Bật tiếng';
+      AUDIO_UNLOCKED = true;
+      // Cập nhật UI nút
+      unlockBtn.textContent = '🔊 Đã bật tiếng';
+      unlockBtn.setAttribute('disabled', 'disabled');
     }
 
     const unlockBtn = document.getElementById('unlockBtn');
@@ -289,7 +191,7 @@
       window.MODE = (window.MODE === 'AR') ? 'QR' : 'AR';
       updateModeUI();
       // khi vào QR mode: dừng hết video
-      if (window.MODE === 'QR') vids.forEach(v => { try { v.pause(); } catch { } });
+      if (window.MODE === 'QR') vids.forEach(v => { try { v.pause(); } catch {} });
     });
 
     /* ===== Watchdog: giữ video không “đứng hình” ===== */
@@ -305,8 +207,8 @@
           try {
             if (video.readyState === 0) video.load();
             video.pause();
-            video.play().catch(() => { });
-          } catch { }
+            video.play().catch(()=>{});
+          } catch {}
         }
         lastT = t;
       }, 700);
@@ -328,12 +230,12 @@
           try {
             if (video.readyState === 0) video.load();
             if (video.currentTime < 0.01) video.currentTime = 0;
-            await video.play().catch(() => { });
+            await video.play().catch(()=>{});
             if (video.paused) { // cố lần 2 nếu cần
-              try { video.pause(); } catch { }
-              await video.play().catch(() => { });
+              try { video.pause(); } catch {}
+              await video.play().catch(()=>{});
             }
-          } catch { }
+          } catch {}
         }
       });
       target.addEventListener('targetLost', () => {
@@ -365,7 +267,7 @@
       });
       const camVideo = await waitMindARVideo();
       camVideo.setAttribute('playsinline', ''); camVideo.setAttribute('webkit-playsinline', '');
-      try { await camVideo.play(); } catch { }
+      try { await camVideo.play(); } catch {}
 
       const ready = () => new Promise(r => {
         const chk = () => { if (camVideo.videoWidth > 0 && camVideo.videoHeight > 0 && camVideo.readyState >= 2) r(); else setTimeout(chk, 80); };
@@ -432,7 +334,7 @@
               showSheet(foundUrl); // để người dùng bấm mở tab (gesture hợp lệ)
             }
           }
-        } catch (_) { }
+        } catch (_) {}
         setTimeout(() => requestAnimationFrame(loop), 34);
       }
       loop();
