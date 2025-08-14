@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,33 +13,120 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
-    html, body { margin:0; padding:0; height:100%; background:transparent!important;
-      font-family: system-ui,-apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    a-scene, canvas { background:transparent!important; }
-    video#mindar-video{
-      position:fixed!important; inset:0!important; width:100vw!important; height:100vh!important;
-      object-fit:cover!important; z-index:-1!important; filter:saturate(1.05) contrast(1.05);
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: transparent !important;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    :root{ --red:#C8102E; --bright-red:#e11d2f; --gold:#FFD700; --glass:rgba(0,0,0,.35); }
-    .banner{ position:fixed; left:12px; right:12px; top:12px; z-index:10; display:flex; align-items:center; gap:10px;
-      background:linear-gradient(135deg,var(--red),var(--bright-red)); color:#fff; padding:10px 14px; border-radius:16px;
-      box-shadow:0 12px 30px rgba(200,16,46,.35), inset 0 0 0 2px rgba(255,255,255,.12); backdrop-filter:blur(8px);}
-    .banner .star{ width:28px; height:28px; background:var(--gold);
-      clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-      filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));}
-    .banner .title{ font-weight:900; letter-spacing:.2px; font-size:16px; text-shadow:0 1px 0 rgba(0,0,0,.25);}
-    .banner .sub{ margin-left:auto; font-weight:700; background:rgba(255,255,255,.15); padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2);}
+    a-scene,
+    canvas {
+      background: transparent !important;
+    }
 
-    .tip{ position:fixed; left:50%; transform:translateX(-50%); top:64px; z-index:10; color:#fff; font-weight:700;
-      background:var(--glass); padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.2); text-shadow:0 1px 0 rgba(0,0,0,.35); }
+    video#mindar-video {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      object-fit: cover !important;
+      z-index: -1 !important;
+      filter: saturate(1.05) contrast(1.05);
+    }
 
-    #ui{ position:fixed; left:0; right:0; bottom:14px; z-index:10; display:flex; justify-content:center; gap:10px; padding:0 12px; }
-    .btn{ appearance:none; border:0; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
-      box-shadow:0 10px 24px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.22); backdrop-filter:blur(8px);
-      background:linear-gradient(135deg,var(--gold),#f6c105); color:#7a5200; }
+    :root {
+      --red: #C8102E;
+      --bright-red: #e11d2f;
+      --gold: #FFD700;
+      --glass: rgba(0, 0, 0, .35);
+    }
+
+    .banner {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--red), var(--bright-red));
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(200, 16, 46, .35), inset 0 0 0 2px rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+    }
+
+    .banner .star {
+      width: 28px;
+      height: 28px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25));
+    }
+
+    .banner .title {
+      font-weight: 900;
+      letter-spacing: .2px;
+      font-size: 16px;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+    }
+
+    .banner .sub {
+      margin-left: auto;
+      font-weight: 700;
+      background: rgba(255, 255, 255, .15);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .2);
+    }
+
+    .tip {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 64px;
+      z-index: 10;
+      color: #fff;
+      font-weight: 700;
+      background: var(--glass);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+    }
+
+    #ui {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 14px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 12px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .25), inset 0 0 0 2px rgba(255, 255, 255, .22);
+      backdrop-filter: blur(8px);
+      background: linear-gradient(135deg, var(--gold), #f6c105);
+      color: #7a5200;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="banner">
@@ -53,11 +141,8 @@
     <button class="btn" id="modeBtn">🔁 Chế độ: AR</button>
   </div>
 
-  <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind;"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    embedded
+  <a-scene mindar-image="imageTargetSrc: ./targets.mind;" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false" embedded
     renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
@@ -83,34 +168,47 @@
   <script>
     /* ===== cấu hình chung ===== */
     const vids = Array.from(document.querySelectorAll('video'));
-    vids.forEach(v => { v.muted = true; v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline',''); });
+    vids.forEach(v => { v.muted = true; v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); });
+    // Bật tiếng sau lần chạm đầu tiên (iOS/Android cần user gesture)
+    function enableAudioOnce() {
+      vids.forEach(v => {
+        v.muted = false;
+        v.play().catch(() => { }); // iOS cần gọi play() sau khi unmute
+      });
+    }
+    window.addEventListener('touchend', enableAudioOnce, { once: true });
+    window.addEventListener('click', enableAudioOnce, { once: true });
+
 
     // Chế độ: 'AR' hoặc 'QR'
     window.MODE = 'AR';
     const modeBtn = document.getElementById('modeBtn');
-    const tipEl   = document.getElementById('tip');
+    const tipEl = document.getElementById('tip');
     modeBtn.addEventListener('click', () => {
       window.MODE = (window.MODE === 'AR') ? 'QR' : 'AR';
+      if (window.MODE === 'AR') {
+        vids.forEach(v => { v.muted = false; v.play().catch(() => { }); });
+      }
       modeBtn.textContent = (window.MODE === 'AR') ? '🔁 Chế độ: AR' : '🔁 Chế độ: QR';
-      tipEl.textContent   = (window.MODE === 'AR')
+      tipEl.textContent = (window.MODE === 'AR')
         ? 'Nhấn nút để quét QR'
         : 'Nhấn nút để về chế độ AR';
       // khi vào QR mode: dừng hết video
-      if (window.MODE === 'QR') vids.forEach(v => { try{v.pause();}catch{} });
+      if (window.MODE === 'QR') vids.forEach(v => { try { v.pause(); } catch { } });
     });
 
     /* ===== theo dõi marker ===== */
     window.activeTargets = 0;
     function wireTarget(targetSelector, videoSelector) {
       const target = document.querySelector(targetSelector);
-      const video  = document.querySelector(videoSelector);
+      const video = document.querySelector(videoSelector);
       if (!target || !video) return;
 
       target.addEventListener('targetFound', () => {
         window.activeTargets++;
         if (window.MODE === 'AR') {        // chỉ phát khi ở AR mode
-          try { if (video.currentTime < 0.01) video.currentTime = 0; } catch {}
-          video.play().catch(()=>{});
+          try { if (video.currentTime < 0.01) video.currentTime = 0; } catch { }
+          video.play().catch(() => { });
         }
       });
       target.addEventListener('targetLost', () => {
@@ -125,77 +223,85 @@
     /* ===== quét QR (dùng camera MindAR) ===== */
     (async () => {
       function findMindARVideo() {
-        return document.querySelector('video#mindar-video')
-            || document.querySelector('video#mindar-image-video')
-            || document.querySelector('video[id^="mindar"]')
-            || document.querySelector('video');
+        // Ưu tiên phần tử có stream camera thật
+        const all = Array.from(document.querySelectorAll('video'));
+        const withStream = all.find(v => v.srcObject instanceof MediaStream);
+        if (withStream) return withStream;
+
+        // MindAR thường đặt id bắt đầu bằng 'mindar'
+        const byId = document.querySelector('video#mindar-video')
+          || document.querySelector('video#mindar-image-video')
+          || all.find(v => (v.id || '').includes('mindar'));
+        return byId || null;  // KHÔNG trả về video thường nữa
       }
+
       const waitMindARVideo = () => new Promise(res => {
-        const tick=()=>{ const v=findMindARVideo(); v?res(v):requestAnimationFrame(tick); }; tick();
+        const tick = () => { const v = findMindARVideo(); v ? res(v) : requestAnimationFrame(tick); }; tick();
       });
       const camVideo = await waitMindARVideo();
-      camVideo.setAttribute('playsinline',''); camVideo.setAttribute('webkit-playsinline','');
-      try { await camVideo.play(); } catch {}
+      camVideo.setAttribute('playsinline', ''); camVideo.setAttribute('webkit-playsinline', '');
+      try { await camVideo.play(); } catch { }
 
-      const ready = () => new Promise(r=>{
-        const chk=()=>{ if (camVideo.videoWidth>0 && camVideo.videoHeight>0 && camVideo.readyState>=2) r(); else setTimeout(chk,80); };
+      const ready = () => new Promise(r => {
+        const chk = () => { if (camVideo.videoWidth > 0 && camVideo.videoHeight > 0 && camVideo.readyState >= 2) r(); else setTimeout(chk, 80); };
         chk();
       });
       await ready();
 
       const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d', { willReadFrequently:true });
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
       let useBD = 'BarcodeDetector' in window;
       let detector = null;
-      if (useBD) { try{ detector = new BarcodeDetector({formats:['qr_code']}); } catch { useBD=false; } }
+      if (useBD) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch { useBD = false; } }
 
-      let lastContent='', coolDown=false, prompting=false;
+      let lastContent = '', coolDown = false, prompting = false;
       const toast = document.createElement('div');
       toast.textContent = useBD ? 'QR: dùng BarcodeDetector' : 'QR: dùng chế độ tương thích (jsQR)';
-      Object.assign(toast.style,{position:'fixed',bottom:'86px',left:'12px',background:'rgba(0,0,0,.5)',color:'#fff',padding:'6px 10px',borderRadius:'10px',fontSize:'12px',zIndex:20});
-      document.body.appendChild(toast); setTimeout(()=>toast.remove(),2500);
+      Object.assign(toast.style, { position: 'fixed', bottom: '86px', left: '12px', background: 'rgba(0,0,0,.5)', color: '#fff', padding: '6px 10px', borderRadius: '10px', fontSize: '12px', zIndex: 20 });
+      document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500);
 
-      function isValidURL(t){ try{ const u=new URL(t); return u.protocol==='http:'||u.protocol==='https:'; }catch{ return false; } }
-      function maybeOpen(url){
+      function isValidURL(t) { try { const u = new URL(t); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
+      function maybeOpen(url) {
         if (!url || prompting) return;
         prompting = true;
         const ok = window.confirm('Phát hiện QR:\n' + url + '\n\nBạn có muốn mở ở tab mới không?');
-        if (ok) window.open(url,'_blank','noopener');
-        lastContent=url; coolDown=true; setTimeout(()=>coolDown=false,1500); prompting=false;
+        if (ok) window.open(url, '_blank', 'noopener');
+        lastContent = url; coolDown = true; setTimeout(() => coolDown = false, 1500); prompting = false;
       }
 
-      async function loop(){
-        try{
+      async function loop() {
+        try {
           // Chỉ quét khi đang ở chế độ QR và không bám marker
-          if (window.MODE === 'QR' && window.activeTargets === 0 && !coolDown && !prompting){
+          if (window.MODE === 'QR' && window.activeTargets === 0 && !coolDown && !prompting) {
             let foundUrl = null;
-            if (useBD && detector){
+            if (useBD && detector) {
               const codes = await detector.detect(camVideo);
-              if (codes && codes.length){
-                const raw = (codes[0].rawValue||'').trim();
-                if (raw && raw!==lastContent && isValidURL(raw)) foundUrl = raw;
+              if (codes && codes.length) {
+                const raw = (codes[0].rawValue || '').trim();
+                if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
               }
             } else {
-              const vw = camVideo.videoWidth|0, vh = camVideo.videoHeight|0;
-              if (vw && vh){
+              const vw = camVideo.videoWidth | 0, vh = camVideo.videoHeight | 0;
+              if (vw && vh) {
                 canvas.width = vw; canvas.height = vh;
-                ctx.drawImage(camVideo,0,0,vw,vh);
-                const img = ctx.getImageData(0,0,vw,vh);
-                const qr = jsQR(img.data,vw,vh,{inversionAttempts:'attemptBoth'});
-                if (qr && qr.data){
+                ctx.drawImage(camVideo, 0, 0, vw, vh);
+                const img = ctx.getImageData(0, 0, vw, vh);
+                const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'attemptBoth' });
+                if (qr && qr.data) {
                   const raw = qr.data.trim();
-                  if (raw && raw!==lastContent && isValidURL(raw)) foundUrl = raw;
+                  if (raw && raw !== lastContent && isValidURL(raw)) foundUrl = raw;
                 }
               }
             }
             if (foundUrl) maybeOpen(foundUrl);
           }
-        }catch(_){}
-        setTimeout(()=>requestAnimationFrame(loop), 34);
+        } catch (_) { }
+        setTimeout(() => requestAnimationFrame(loop), 34);
       }
       loop();
     })();
   </script>
 </body>
+
 </html>
