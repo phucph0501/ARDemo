@@ -253,23 +253,46 @@
       v.setAttribute('webkit-playsinline', '');
     });
     /* ===== THEO DÕI MARKER ===== */
-    let activeTargets = 0;
+    // let activeTargets = 0;
+    // function wireTarget(targetSelector, videoSelector) {
+    //   const target = document.querySelector(targetSelector);
+    //   const video = document.querySelector(videoSelector);
+    //   if (!target || !video) return;
+
+    //   target.addEventListener('targetFound', () => {
+    //     activeTargets++;
+    //     try { if (video.currentTime < 0.01) video.currentTime = 0; } catch { }
+    //     video.play().catch(() => { });
+    //   });
+    //   target.addEventListener('targetLost', () => {
+    //     activeTargets = Math.max(0, activeTargets - 1);
+    //     if (!video.paused) video.pause();
+    //   });
+    // }
+    // // ✅ thêm dấu # cho selector
+    // wireTarget('#t0', '#v0');
+    // wireTarget('#t1', '#v1');
+    // wireTarget('#t2', '#v2');
+
+    window.activeTargets = 0;  // DÙNG CHUNG TOÀN TRANG
+
     function wireTarget(targetSelector, videoSelector) {
       const target = document.querySelector(targetSelector);
       const video = document.querySelector(videoSelector);
       if (!target || !video) return;
 
       target.addEventListener('targetFound', () => {
-        activeTargets++;
+        window.activeTargets++;                    // << dùng window.activeTargets
         try { if (video.currentTime < 0.01) video.currentTime = 0; } catch { }
         video.play().catch(() => { });
       });
+
       target.addEventListener('targetLost', () => {
-        activeTargets = Math.max(0, activeTargets - 1);
+        window.activeTargets = Math.max(0, window.activeTargets - 1);  // <<
         if (!video.paused) video.pause();
       });
     }
-    // ✅ thêm dấu # cho selector
+
     wireTarget('#t0', '#v0');
     wireTarget('#t1', '#v1');
     wireTarget('#t2', '#v2');
@@ -370,7 +393,8 @@
                 canvas.width = vw; canvas.height = vh;
                 ctx.drawImage(camVideo, 0, 0, vw, vh);
                 const img = ctx.getImageData(0, 0, vw, vh);
-                const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'dontInvert' });
+                //const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'dontInvert' });
+                const qr = jsQR(img.data, vw, vh, { inversionAttempts: 'attemptBoth' });
                 if (qr && qr.data) {
                   const raw = qr.data.trim();
                   if (DEBUG) console.log('jsQR hit:', raw);
