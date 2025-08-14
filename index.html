@@ -61,17 +61,7 @@
       font-weight: 800; box-shadow: 0 10px 24px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.22);
       backdrop-filter: blur(8px); background: linear-gradient(135deg, var(--gold), #f6c105); color: #7a5200;
     }
-
-    /* Overlay mở khóa audio */
-    #unlockAudio {
-      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.6); z-index: 9999;
-    }
-    #unlockBtn {
-      font-weight: 800; font-size: 16px; padding: 12px 18px; border-radius: 999px; border: 0; cursor: pointer;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.22);
-      background: linear-gradient(135deg, var(--gold), #f6c105); color:#7a5200;
-    }
+    .btn[disabled] { opacity:.6; cursor:not-allowed; }
 
     /* Bottom sheet mở URL sau khi quét */
     #qrSheet {
@@ -109,11 +99,7 @@
 
   <div id="ui">
     <button class="btn" id="modeBtn">🔁 Chế độ: AR</button>
-  </div>
-
-  <!-- Overlay mở khóa âm thanh -->
-  <div id="unlockAudio">
-    <button id="unlockBtn">🔊 Chạm để bật tiếng</button>
+    <button class="btn" id="unlockBtn">🔊 Bật tiếng</button>
   </div>
 
   <!-- Bottom sheet QR -->
@@ -130,9 +116,10 @@
     renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
-      <video id="v0" src="./video1.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
-      <video id="v1" src="./video2.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
-      <video id="v2" src="./video3.mp4" preload="auto" webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <!-- Thêm loop để tránh đứng ở cuối -->
+      <video id="v0" src="./video1.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v1" src="./video2.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
+      <video id="v2" src="./video3.mp4" preload="auto" loop webkit-playsinline playsinline crossorigin="anonymous"></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -159,7 +146,9 @@
       v.volume = 1.0;
     });
 
+    let AUDIO_UNLOCKED = false;
     async function unlockAudio() {
+      if (AUDIO_UNLOCKED) return;
       // 1) Resume WebAudio của A-Frame (nếu dùng)
       try {
         const scene = AFRAME.scenes?.[0];
@@ -176,29 +165,54 @@
           v.currentTime = 0;
         } catch (e) {}
       }));
+
+      AUDIO_UNLOCKED = true;
+      // Cập nhật UI nút
+      unlockBtn.textContent = '🔊 Đã bật tiếng';
+      unlockBtn.setAttribute('disabled', 'disabled');
     }
 
-    const unlockLayer = document.getElementById('unlockAudio');
     const unlockBtn = document.getElementById('unlockBtn');
-    unlockBtn.addEventListener('click', async () => {
-      await unlockAudio();
-      unlockLayer.style.display = 'none';
-    });
+    unlockBtn.addEventListener('click', unlockAudio);
 
     // Chế độ: 'AR' hoặc 'QR'
     window.MODE = 'AR';
     const modeBtn = document.getElementById('modeBtn');
     const tipEl = document.getElementById('tip');
-    modeBtn.addEventListener('click', () => {
-      window.MODE = (window.MODE === 'AR') ? 'QR' : 'AR';
+    function updateModeUI() {
       modeBtn.textContent = (window.MODE === 'AR') ? '🔁 Chế độ: AR' : '🔁 Chế độ: QR';
       tipEl.textContent = (window.MODE === 'AR')
         ? 'Nhấn nút để quét QR'
         : 'Nhấn nút để về chế độ AR';
+    }
+    updateModeUI();
 
+    modeBtn.addEventListener('click', () => {
+      window.MODE = (window.MODE === 'AR') ? 'QR' : 'AR';
+      updateModeUI();
       // khi vào QR mode: dừng hết video
       if (window.MODE === 'QR') vids.forEach(v => { try { v.pause(); } catch {} });
     });
+
+    /* ===== Watchdog: giữ video không “đứng hình” ===== */
+    function keepAlive(video) {
+      let lastT = -1;
+      setInterval(() => {
+        // chỉ kiểm tra khi đang ở AR và có target bám
+        if (window.MODE !== 'AR' || window.activeTargets === 0) return;
+        if (video.paused || video.readyState < 2) return;
+
+        const t = video.currentTime;
+        if (Math.abs(t - lastT) < 0.001) {
+          try {
+            if (video.readyState === 0) video.load();
+            video.pause();
+            video.play().catch(()=>{});
+          } catch {}
+        }
+        lastT = t;
+      }, 700);
+    }
 
     /* ===== Theo dõi marker ===== */
     window.activeTargets = 0;
@@ -207,11 +221,21 @@
       const video = document.querySelector(videoSelector);
       if (!target || !video) return;
 
+      // bật watchdog cho từng video
+      keepAlive(video);
+
       target.addEventListener('targetFound', async () => {
         window.activeTargets++;
         if (window.MODE === 'AR') {
-          try { if (video.currentTime < 0.01) video.currentTime = 0; } catch {}
-          try { await video.play(); } catch {}
+          try {
+            if (video.readyState === 0) video.load();
+            if (video.currentTime < 0.01) video.currentTime = 0;
+            await video.play().catch(()=>{});
+            if (video.paused) { // cố lần 2 nếu cần
+              try { video.pause(); } catch {}
+              await video.play().catch(()=>{});
+            }
+          } catch {}
         }
       });
       target.addEventListener('targetLost', () => {
@@ -235,7 +259,7 @@
         const byId = document.querySelector('video#mindar-video')
           || document.querySelector('video#mindar-image-video')
           || all.find(v => (v.id || '').includes('mindar'));
-        return byId || null; // KHÔNG trả về video thường nữa
+        return byId || null;
       }
 
       const waitMindARVideo = () => new Promise(res => {
@@ -273,7 +297,6 @@
       function hideSheet() {
         qrSheet.style.display = 'none';
         prompting = false;
-        // bật cooldown ngắn để tránh mở lại ngay
         coolDown = true; setTimeout(() => coolDown = false, 1200);
       }
       dismissSheet.addEventListener('click', hideSheet);
@@ -308,12 +331,10 @@
             }
             if (foundUrl) {
               lastContent = foundUrl;
-              // Hiện sheet để người dùng TAP -> đó là user gesture hợp lệ mở tab mới
-              showSheet(foundUrl);
+              showSheet(foundUrl); // để người dùng bấm mở tab (gesture hợp lệ)
             }
           }
-        } catch (_) { /* bỏ qua lỗi lẻ tẻ */ }
-        // dùng requestAnimationFrame nhưng chèn delay nhẹ để tiết kiệm CPU
+        } catch (_) {}
         setTimeout(() => requestAnimationFrame(loop), 34);
       }
       loop();
